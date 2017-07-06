@@ -1,0 +1,78 @@
+---
+title: "Clustering"
+author: "SP"
+date: "July 4, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercises 0 and 1 Clustering
+INstalling packages and removing column type using scale function. WOrking on first method of clustering
+
+```{r Clustering}
+# Exercise 0: Install these packages if you don't have them already
+#install.packages(c("cluster", "rattle","NbClust"))
+#install.packages("flexclust")
+# loading the data and looking at the first few rows
+data(wine, package="rattle")
+head(wine)
+
+# Exercise 1: Remove the first column from the data and scale
+wine <- scale(wine[-1]) 
+
+
+# Cluster the data using K-Means.
+# 1st Method
+
+wssplot <- function(data, nc=15, seed=1234){
+	              wss <- (nrow(data)-1)*sum(apply(data,2,var))
+               	      for (i in 2:nc){
+		        set.seed(seed)
+	                wss[i] <- sum(kmeans(data, centers=i)$withinss)}
+	                
+		      plot(1:nc, wss, type="b", xlab="Number of Clusters",
+	                        ylab="Within groups sum of squares")
+	   }
+
+wssplot(wine)
+``` 
+Since there is distinct drop within sum of squares between 1 and 3 clusters, we can set for 3 clusters solution. 
+
+
+## Exercises 2 and 3
+ Use the NbClust library, which runs many experiments and gives a distribution of potential number of clusters.
+``` {r}
+library(NbClust)
+wssplot(df)                                      
+set.seed(1234)
+nc <- NbClust(df, min.nc=2, max.nc=15, method="kmeans")
+table(nc$Best.n[1,])
+```
+
+
+## Exercise 4
+Running the Kmean cluster 
+```{r}
+# Use the Kmean method 
+set.seed(1234)
+fit.km <- kmeans(df, 3, nstart=25)
+fit.km$size
+fit.km$centers   
+```
+
+## Exercise 5 andd 6
+Performing cross-tabulation of cluster and type using table(). Using Rnak index i am quanitifying agreement between type and cluster
+
+```{r}
+data(wine, package="rattle")
+ct.km <- table(wine$Type, fit.km$cluster)
+ct.km
+
+library(flexclust)
+randIndex(ct.km)
+
+```
+Rand index is 0.9 which si pretty solid cluster solution. 
